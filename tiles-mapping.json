@@ -1,0 +1,39 @@
+{
+    "tiles":  [
+        {
+            "1": "images/Tiles/1.jpg",
+            "up" : "Grass",
+            "right" : "Grass",
+            "down" : "Road",
+            "left" : "Road"
+        },
+        {
+            "2": "images/Tiles/2.jpg",
+            "up" : "Castle",
+            "right" : "Road",
+            "down" : "Road",
+            "left" : "Grass"
+        },
+        {
+            "3": "images/Tiles/3.jpg",
+            "up" : "Castle",
+            "right" : "Road",
+            "down" : "Road",
+            "left" : "Castle"
+        },
+        {
+            "4": "images/Tiles/4.jpg",
+            "up" : "Castle",
+            "right" : "Castle",
+            "down" : "Road",
+            "left" : "Castle"
+        },
+        {
+            "5": "images/Tiles/5.jpg",
+            "up" : "Grass",
+            "right" : "Grass",
+            "down" : "Grass",
+            "left" : "Grass"
+        }
+    ]
+}

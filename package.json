@@ -1,0 +1,21 @@
+{
+  "name": "carcassonne-map-generator",
+  "version": "1.0.0",
+  "description": "Static website for Carcassonne map generation with image manipulation",
+  "main": "index.html",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "dev": "tsc --watch"
+  },
+  "keywords": [
+    "carcassonne",
+    "map-generator",
+    "image-manipulation"
+  ],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}

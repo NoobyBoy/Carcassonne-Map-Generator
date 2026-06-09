@@ -1,0 +1,419 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #024D87;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    width: 95%;
+    height: 95vh;
+    gap: 10px;
+    padding: 10px;
+}
+
+.title-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px 0;
+}
+
+.title-image {
+    max-width: 100%;
+    max-height: 100px;
+    object-fit: contain;
+}
+
+.content-wrapper {
+    display: flex;
+    flex: 1;
+    gap: 10px;
+    min-height: 0;
+}
+
+.main-zone {
+    flex: 3;
+    background-color: #808080;
+    border-radius: 15px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    gap: 10px;
+}
+
+.main-zone h2 {
+    color: white;
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+}
+
+.zoom-controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    padding: 5px;
+}
+
+.zoom-button {
+    width: 40px;
+    height: 40px;
+    background-color: #555;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.zoom-button:hover {
+    background-color: #666;
+}
+
+.zoom-button:active {
+    background-color: #777;
+}
+
+.image-area {
+    flex: 1;
+    background-color: #696969;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    padding: 10px;
+    min-height: 0;
+    position: relative;
+    cursor: grab;
+}
+
+.image-area:active {
+    cursor: grabbing;
+}
+
+.tile-grid {
+    display: grid;
+    gap: 2px;
+    background-color: #555;
+    padding: 5px;
+    border-radius: 5px;
+    max-width: 100%;
+    max-height: 100%;
+    overflow: hidden;
+}
+
+.grid-cell {
+    background-color: #777;
+    border: 1px solid #666;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.grid-cell:hover {
+    background-color: #888;
+}
+
+.grid-cell.occupied {
+    background-color: #555;
+}
+
+.tile-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 3px;
+}
+
+.sidebar-zone {
+    flex: 1;
+    background-color: #808080;
+    border-radius: 15px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.sidebar-zone h2 {
+    color: white;
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+}
+
+.parameters-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.tabs-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.tab-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.tab-button {
+    flex: 1;
+    padding: 10px;
+    background-color: #696969;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+}
+
+.tab-button:hover {
+    background-color: #777;
+}
+
+.tab-button.active {
+    background-color: #555;
+    font-weight: bold;
+}
+
+.tab-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.tab-pane {
+    display: none;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.tab-pane.active {
+    display: flex;
+    flex-direction: column;
+}
+
+.tiles-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 10px 0;
+}
+
+.export-button {
+    padding: 10px 15px;
+    background-color: #555;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+    margin-bottom: 10px;
+}
+
+.export-button:hover {
+    background-color: #666;
+}
+
+.tile-entry {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 15px;
+    background-color: #696969;
+    border-radius: 8px;
+}
+
+.tile-entry-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.tile-entry-image {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 5px;
+    border: 2px solid #555;
+}
+
+.tile-entry-id {
+    color: white;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.tile-entry-fields {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+
+.tile-field {
+    background-color: #555;
+    padding: 8px;
+    border-radius: 5px;
+    text-align: center;
+    color: white;
+    font-size: 0.85rem;
+}
+
+.tile-field-label {
+    font-size: 0.75rem;
+    color: #aaa;
+    margin-bottom: 3px;
+}
+
+.tile-field-input {
+    width: 100%;
+    padding: 4px;
+    background-color: #777;
+    border: 1px solid #666;
+    border-radius: 3px;
+    color: white;
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+.tile-field-input:focus {
+    outline: none;
+    border-color: #888;
+    background-color: #888;
+}
+
+.placeholder-line {
+    height: 8px;
+    background-color: #696969;
+    border-radius: 4px;
+    width: 100%;
+}
+
+.placeholder-line:nth-child(odd) {
+    width: 80%;
+}
+
+.placeholder-line:nth-child(even) {
+    width: 60%;
+}
+
+.parameter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.parameter-label {
+    color: white;
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+.parameter-input {
+    padding: 8px;
+    background-color: #777;
+    border: 1px solid #666;
+    border-radius: 5px;
+    color: white;
+    font-size: 0.9rem;
+}
+
+.parameter-input:focus {
+    outline: none;
+    border-color: #888;
+    background-color: #888;
+}
+
+.apply-button {
+    padding: 10px 15px;
+    background-color: #555;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+    margin-top: 10px;
+}
+
+.apply-button:hover {
+    background-color: #666;
+}
+
+.button-group {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.generate-button {
+    padding: 10px 15px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+}
+
+.generate-button:hover {
+    background-color: #45a049;
+}
+
+.radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: white;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.radio-label input[type="radio"] {
+    cursor: pointer;
+}
+
+.radio-label span {
+    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+    .content-wrapper {
+        flex-direction: column;
+    }
+    
+    .main-zone,
+    .sidebar-zone {
+        min-height: 300px;
+    }
+}
