@@ -3,7 +3,7 @@
 
 
 interface GridState {
-    [key: string]: number; // key: "x,y", value: tileId
+    [key: string]: { tileId: number, rotation: number, matchString: string }; // key: "x,y", value: tile data
 }
 
 class Coordinate {
@@ -112,9 +112,9 @@ class ImageManipulator {
         const state = this.getGridState();
         for (const key in state) {
             if (state.hasOwnProperty(key)) {
-                const tileId = state[key];
+                const tileData = state[key];
                 const [x, y] = key.split(',').map(Number);
-                this.placeTile(new Coordinate(x, y), tileId);
+                this.placeTile(new Coordinate(x, y), tileData.tileId, tileData.rotation);
             }
         }
     }
@@ -258,8 +258,36 @@ class ImageManipulator {
 
             cell.appendChild(img);
             cell.classList.add('occupied');
-            this.gridState[cellKey] = tileId;
-            //console.log(`Tile ${tileId} placed at (${coordinate.x}, ${coordinate.y}) with rotation ${rotation}deg`);
+            
+            // Calculate matchString based on tile data
+            const tile = tilesData.tiles.find(t => (t as any)[tileId.toString()] !== undefined);
+            let matchString = '';
+            if (tile) {
+                const up = tile.up;
+                const right = tile.right;
+                const down = tile.down;
+                const left = tile.left;
+                
+                // Adjust matchString based on rotation
+                switch (rotation) {
+                    case 0:
+                        matchString = `${up}-${right}-${down}-${left}`;
+                        break;
+                    case 90:
+                        matchString = `${left}-${up}-${right}-${down}`;
+                        break;
+                    case 180:
+                        matchString = `${down}-${left}-${up}-${right}`;
+                        break;
+                    case 270:
+                        
+                        matchString = `${right}-${down}-${left}-${up}`;
+                        break;
+                }
+            }
+            
+            this.gridState[cellKey] = { tileId, rotation, matchString };
+            console.log(`Tile ${tileId} placed at (${coordinate.x}, ${coordinate.y}) with rotation ${rotation}deg and ${matchString}`);
         } else {
             console.error(`Failed to load tile image: ${tileId}.jpg`);
         }
@@ -336,17 +364,32 @@ class ImageManipulator {
             return "[^-]";
         }
         const cellKey = `${x},${y}`;
-        const tileId = this.gridState[cellKey];
+        const tileData = this.gridState[cellKey];
 
-        if (tileId === undefined) {
+        if (tileData === undefined) {
             return "[^-]";
         }
 
         // Find the tile in tilesData
-        const tile = tilesData.tiles.find(t => (t as any)[tileId.toString()] !== undefined);
-        if (tile && (tile as any)[direction]) {
-            return (tile as any)[direction];
+        console.log('Fetching tile information at coordinates (x, y)',x , y, ':', tileData);
+        const splitMatch = tileData.matchString.split('-');
+        if (direction === "up") {
+            console.log(splitMatch, direction, splitMatch[0]);
+            return splitMatch[0];
         }
+        else if (direction === "right") {
+            console.log(splitMatch, direction, splitMatch[1]);
+            return splitMatch[1];
+        }
+        else if (direction === "down") {
+            console.log(splitMatch, direction, splitMatch[2]);
+            return splitMatch[2];
+        }
+        else if (direction === "left") {
+            console.log(splitMatch, direction, splitMatch[3]);
+            return splitMatch[3];
+        }
+
 
         return "[^-]";
   
@@ -390,6 +433,7 @@ class ParameterManager {
         this.setupExportButton();
         this.setupGridSizeInputs();
         this.setupGenerateButton();
+        this.setupGenerationSpeedSlider();
         this.loadTilesMapping();
     }
 
@@ -472,6 +516,17 @@ class ParameterManager {
             generateButton.addEventListener('click', () => {
                 const generator = new Generator(this.imageManipulator!, this);
                 generator.generate();
+            });
+        }
+    }
+
+    private setupGenerationSpeedSlider(): void {
+        const speedSlider = document.getElementById('generation-speed') as HTMLInputElement;
+        const speedValue = document.getElementById('speed-value') as HTMLElement;
+        
+        if (speedSlider && speedValue) {
+            speedSlider.addEventListener('input', () => {
+                speedValue.textContent = speedSlider.value;
             });
         }
     }
@@ -634,6 +689,16 @@ class ParameterManager {
         return selectedRadio ? selectedRadio.value : 'middle';
     }
 
+    // Get generation speed
+    public getGenerationSpeed(): number {
+        const speedSlider = document.getElementById('generation-speed') as HTMLInputElement;
+        if (speedSlider) {
+            const value = parseInt(speedSlider.value);
+            return !isNaN(value) && value > 0 ? value : 500;
+        }
+        return 500;
+    }
+
 }
 
 
@@ -708,7 +773,8 @@ class Generator {
             this.TilesList.push(new OrientedTile({
                 id:     parseInt(tileId),
                 rotation: 90,
-                matchString : `${right}-${down}-${left}-${up}`
+                matchString : `${left}-${up}-${right}-${down}`
+
             }));
 
             this.TilesList.push(new OrientedTile({
@@ -720,7 +786,8 @@ class Generator {
             this.TilesList.push(new OrientedTile({
                 id: parseInt(tileId),
                 rotation: 270,
-                matchString : `${left}-${up}-${right}-${down}`
+                matchString : `${right}-${down}-${left}-${up}`
+
             }));
         });
     }
@@ -731,6 +798,7 @@ class Generator {
         const down = this.imageManipulator.getCellTile(coord.x, coord.y + 1, "down");
         const left = this.imageManipulator.getCellTile(coord.x - 1, coord.y, "left");
 
+        console.log(`${coord.x}, ${coord.y} : ^${up}+-${right}+-${down}+-${left}+$`);
         return `^${up}+-${right}+-${down}+-${left}+$`;
     }
 
@@ -858,6 +926,7 @@ class Generator {
             this.generationEnded = false;
             let iteration = 0;
             const maxIterations = this.gridSize.x * this.gridSize.y; // Safety limit
+            const generationSpeed = this.parameters.getGenerationSpeed();
 
             while (!this.generationEnded) {
                 // Check if current coordinate is valid
@@ -869,12 +938,13 @@ class Generator {
                 this.imageManipulator.placeTile(this.currentTileCoordinate, nextTile.id, nextTile.rotation);
                 this.previousTileCoordinate = this.currentTileCoordinate;
                 this.currentTileCoordinate = this.GetNextPosition();
-                
+
                 iteration++;
                 console.log(`Iteration: ${iteration}, Position: (${this.previousTileCoordinate.x}, ${this.previousTileCoordinate.y})`);
-                await new Promise(resolve => setTimeout(resolve, 25));
-                
-                
+                console.log(generationSpeed);
+                await new Promise(resolve => setTimeout(resolve, generationSpeed));
+
+
             }
 
             console.log(`Generation ended after ${iteration} iterations`);
