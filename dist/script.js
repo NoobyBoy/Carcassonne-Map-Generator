@@ -244,6 +244,7 @@ class ImageManipulator {
             }
             this.gridState[cellKey] = { tileId, rotation, matchString };
             console.log(`Tile ${tileId} placed at (${coordinate.x}, ${coordinate.y}) with rotation ${rotation}deg and ${matchString}`);
+            console.log(`up: ${matchString.split('-')[0]}, right: ${matchString.split('-')[1]}, down: ${matchString.split('-')[2]}, left: ${matchString.split('-')[3]}`);
         }
         else {
             console.error(`Failed to load tile image: ${tileId}.jpg`);
@@ -318,20 +319,20 @@ class ImageManipulator {
         console.log('Fetching tile information at coordinates (x, y)', x, y, ':', tileData);
         const splitMatch = tileData.matchString.split('-');
         if (direction === "up") {
-            console.log(splitMatch, direction, splitMatch[0]);
-            return splitMatch[0];
+            console.log(splitMatch, direction, splitMatch[2]);
+            return splitMatch[2]; // i get the down position
         }
         else if (direction === "right") {
-            console.log(splitMatch, direction, splitMatch[1]);
-            return splitMatch[1];
+            console.log(splitMatch, direction, splitMatch[3]);
+            return splitMatch[3]; // i get the left position
         }
         else if (direction === "down") {
-            console.log(splitMatch, direction, splitMatch[2]);
-            return splitMatch[2];
+            console.log(splitMatch, direction, splitMatch[0]);
+            return splitMatch[0]; // i get the up position
         }
         else if (direction === "left") {
-            console.log(splitMatch, direction, splitMatch[3]);
-            return splitMatch[3];
+            console.log(splitMatch, direction, splitMatch[1]);
+            return splitMatch[1]; // i get the right position
         }
         return "[^-]";
     }
@@ -591,7 +592,7 @@ class ParameterManager {
         const speedSlider = document.getElementById('generation-speed');
         if (speedSlider) {
             const value = parseInt(speedSlider.value);
-            return !isNaN(value) && value > 0 ? value : 500;
+            return !isNaN(value) && value >= 0 ? value : 500;
         }
         return 500;
     }
@@ -671,7 +672,8 @@ class Generator {
         const right = this.imageManipulator.getCellTile(coord.x + 1, coord.y, "right");
         const down = this.imageManipulator.getCellTile(coord.x, coord.y + 1, "down");
         const left = this.imageManipulator.getCellTile(coord.x - 1, coord.y, "left");
-        console.log(`${coord.x}, ${coord.y} : ^${up}+-${right}+-${down}+-${left}+$`);
+        console.log(`${coord.x}, ${coord.y} : up : ${up} | right : ${right} | down : ${down} | left : ${left}`);
+        console.log(`^${up}+-${right}+-${down}+-${left}+$`);
         return `^${up}+-${right}+-${down}+-${left}+$`;
     }
     ChoseNextTile() {
@@ -805,7 +807,6 @@ class Generator {
                     this.currentTileCoordinate = this.GetNextPosition();
                     iteration++;
                     console.log(`Iteration: ${iteration}, Position: (${this.previousTileCoordinate.x}, ${this.previousTileCoordinate.y})`);
-                    console.log(generationSpeed);
                     yield new Promise(resolve => setTimeout(resolve, generationSpeed));
                 }
                 console.log(`Generation ended after ${iteration} iterations`);
