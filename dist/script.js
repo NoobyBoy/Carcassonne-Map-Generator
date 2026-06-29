@@ -356,6 +356,7 @@ class ParameterManager {
     constructor(imageManipulator = null) {
         this.tileInputs = new Map();
         this.imageManipulator = null;
+        this.currentGenerator = null;
         this.parametersContent = document.querySelector('.parameters-content');
         this.tilesList = document.getElementById('tiles-list');
         this.imageManipulator = imageManipulator;
@@ -367,6 +368,8 @@ class ParameterManager {
         this.setupExportButton();
         this.setupGridSizeInputs();
         this.setupGenerateButton();
+        this.setupStopButton();
+        this.setupClearButton();
         this.setupGenerationSpeedSlider();
         this.loadTilesMapping();
     }
@@ -411,35 +414,61 @@ class ParameterManager {
         }
     }
     setupGridSizeInputs() {
-        const applyButton = document.getElementById('apply-grid-size');
-        if (applyButton) {
-            applyButton.addEventListener('click', () => {
-                const gridSizeXInput = document.getElementById('grid-size-x');
-                const gridSizeYInput = document.getElementById('grid-size-y');
-                if (gridSizeXInput && gridSizeYInput && this.imageManipulator) {
-                    const sizeX = parseInt(gridSizeXInput.value);
-                    const sizeY = parseInt(gridSizeYInput.value);
-                    if (!isNaN(sizeX) && !isNaN(sizeY) && sizeX > 0 && sizeY > 0) {
-                        this.imageManipulator.createGrid(sizeY, sizeX);
-                        // Place first tile based on selected position
-                        const position = this.calculateFirstTileCoordinates();
-                        this.imageManipulator.placeTile(position, 11);
-                        console.log(`Grid resized to ${sizeY}x${sizeX}, first tile at (${position.x}, ${position.y})`);
-                    }
-                    else {
-                        console.error('Invalid grid size values');
-                    }
-                }
-            });
+        const gridSizeXInput = document.getElementById('grid-size-x');
+        const gridSizeYInput = document.getElementById('grid-size-y');
+        if (gridSizeXInput && gridSizeYInput && this.imageManipulator) {
+            const sizeX = parseInt(gridSizeXInput.value);
+            const sizeY = parseInt(gridSizeYInput.value);
+            if (!isNaN(sizeX) && !isNaN(sizeY) && sizeX > 0 && sizeY > 0) {
+                this.imageManipulator.createGrid(sizeY, sizeX);
+                // Place first tile based on selected position
+                const position = this.calculateFirstTileCoordinates();
+                this.imageManipulator.placeTile(position, 11);
+                console.log(`Grid resized to ${sizeY}x${sizeX}, first tile at (${position.x}, ${position.y})`);
+            }
+            else {
+                console.error('Invalid grid size values');
+            }
         }
     }
     setupGenerateButton() {
+        this.setupGridSizeInputs();
         const generateButton = document.getElementById('generate-map');
         if (generateButton && this.imageManipulator) {
             generateButton.addEventListener('click', () => {
                 const generator = new Generator(this.imageManipulator, this);
+                this.currentGenerator = generator;
                 generator.generate();
             });
+        }
+    }
+    setupStopButton() {
+        const stopButton = document.getElementById('stop-generation');
+        if (stopButton) {
+            stopButton.disabled = true;
+            stopButton.addEventListener('click', () => {
+                if (this.currentGenerator) {
+                    this.currentGenerator.stop();
+                    this.currentGenerator = null;
+                }
+            });
+        }
+    }
+    setupClearButton() {
+        const clearButton = document.getElementById('clear-grid');
+        if (clearButton && this.imageManipulator) {
+            clearButton.addEventListener('click', () => {
+                this.imageManipulator.clearGrid();
+                // Reset first tile position
+                const position = this.calculateFirstTileCoordinates();
+                this.imageManipulator.placeTile(position, 11);
+            });
+        }
+    }
+    setStopButtonEnabled(enabled) {
+        const stopButton = document.getElementById('stop-generation');
+        if (stopButton) {
+            stopButton.disabled = !enabled;
         }
     }
     setupGenerationSpeedSlider() {
@@ -529,8 +558,19 @@ class ParameterManager {
             const idLabel = document.createElement('div');
             idLabel.className = 'tile-entry-id';
             idLabel.textContent = `Tuile ${tileId}`;
+            const probabilityField = document.createElement('div');
+            probabilityField.className = 'tile-field';
+            const probabilityLabel = document.createElement('div');
+            probabilityLabel.className = 'tile-field-label';
+            probabilityLabel.textContent = 'Probabilité';
+            const probabilityValue = document.createElement('div');
+            probabilityValue.className = 'tile-field-value';
+            probabilityValue.textContent = (tile.probabilty || 0) + "%";
+            probabilityField.appendChild(probabilityLabel);
+            probabilityField.appendChild(probabilityValue);
             header.appendChild(img);
             header.appendChild(idLabel);
+            header.appendChild(probabilityField);
             const fields = document.createElement('div');
             fields.className = 'tile-entry-fields';
             const fieldConfigs = [
@@ -545,13 +585,9 @@ class ParameterManager {
                 const fieldLabel = document.createElement('div');
                 fieldLabel.className = 'tile-field-label';
                 fieldLabel.textContent = config.label;
-                const fieldValue = document.createElement('input');
-                fieldValue.type = 'text';
-                fieldValue.value = config.value;
-                fieldValue.className = 'tile-field-input';
-                // Store reference to input for export
-                const inputKey = `${tileId}_${config.key}`;
-                this.tileInputs.set(inputKey, fieldValue);
+                const fieldValue = document.createElement('div');
+                fieldValue.className = 'tile-field-value';
+                fieldValue.textContent = config.value;
                 field.appendChild(fieldLabel);
                 field.appendChild(fieldValue);
                 fields.appendChild(field);
@@ -602,9 +638,11 @@ class OrientedTile {
         this.id = 0;
         this.rotation = 0;
         this.matchString = '';
+        this.probability = 0;
         this.id = config.id;
         this.rotation = config.rotation;
         this.matchString = config.matchString;
+        this.probability = config.probability;
     }
 }
 class Generator {
@@ -612,6 +650,7 @@ class Generator {
         this.imageManipulator = imageManipulator;
         this.parameters = parameters;
         this.generationEnded = false;
+        this.shouldStop = false;
         // Spiral algorithm state
         this.spiralStep = 1;
         this.spiralDirection = 0; // 0: up, 1: right, 2: down, 3: left
@@ -645,25 +684,30 @@ class Generator {
             const right = tile.right;
             const down = tile.down;
             const left = tile.left;
+            const probability = tile.probabilty || 0;
             this.TilesList.push(new OrientedTile({
                 id: parseInt(tileId),
                 rotation: 0,
-                matchString: `${up}-${right}-${down}-${left}`
+                matchString: `${up}-${right}-${down}-${left}`,
+                probability: probability
             }));
             this.TilesList.push(new OrientedTile({
                 id: parseInt(tileId),
                 rotation: 90,
-                matchString: `${left}-${up}-${right}-${down}`
+                matchString: `${left}-${up}-${right}-${down}`,
+                probability: probability
             }));
             this.TilesList.push(new OrientedTile({
                 id: parseInt(tileId),
                 rotation: 180,
-                matchString: `${down}-${left}-${up}-${right}`
+                matchString: `${down}-${left}-${up}-${right}`,
+                probability: probability
             }));
             this.TilesList.push(new OrientedTile({
                 id: parseInt(tileId),
                 rotation: 270,
-                matchString: `${right}-${down}-${left}-${up}`
+                matchString: `${right}-${down}-${left}-${up}`,
+                probability: probability
             }));
         });
     }
@@ -685,8 +729,17 @@ class Generator {
                 possibleTiles.push(tile);
             }
         });
-        const randomIndex = Math.floor(Math.random() * possibleTiles.length);
-        return possibleTiles[randomIndex];
+        // Weighted random selection based on probabilities
+        const totalProbability = possibleTiles.reduce((sum, tile) => sum + tile.probability, 0);
+        let randomValue = Math.random() * totalProbability;
+        for (const tile of possibleTiles) {
+            randomValue -= tile.probability;
+            if (randomValue <= 0) {
+                return tile;
+            }
+        }
+        // Fallback if no probability match (shouldn't happen with valid data)
+        return possibleTiles[Math.floor(Math.random() * possibleTiles.length)];
     }
     GetNextPosition() {
         switch (this.mode) {
@@ -792,10 +845,12 @@ class Generator {
         return __awaiter(this, void 0, void 0, function* () {
             if (this.imageManipulator) {
                 this.generationEnded = false;
+                this.shouldStop = false;
                 let iteration = 0;
                 const maxIterations = this.gridSize.x * this.gridSize.y; // Safety limit
                 const generationSpeed = this.parameters.getGenerationSpeed();
-                while (!this.generationEnded) {
+                this.parameters.setStopButtonEnabled(true);
+                while (!this.generationEnded && !this.shouldStop) {
                     // Check if current coordinate is valid
                     if (this.currentTileCoordinate.x === -1 || this.currentTileCoordinate.y === -1) {
                         console.log('Invalid coordinate, stopping generation');
@@ -809,9 +864,14 @@ class Generator {
                     console.log(`Iteration: ${iteration}, Position: (${this.previousTileCoordinate.x}, ${this.previousTileCoordinate.y})`);
                     yield new Promise(resolve => setTimeout(resolve, generationSpeed));
                 }
+                this.parameters.setStopButtonEnabled(false);
                 console.log(`Generation ended after ${iteration} iterations`);
             }
         });
+    }
+    stop() {
+        this.shouldStop = true;
+        console.log('Generation stopped by user');
     }
 }
 const tilesData = {
@@ -821,175 +881,199 @@ const tilesData = {
             "up": "Grass",
             "right": "Grass",
             "down": "Road",
-            "left": "Road"
+            "left": "Road",
+            "probabilty": 12.5
         },
         {
             "2": "images/Tiles/2.jpg",
             "up": "Castle",
             "right": "Road",
             "down": "Road",
-            "left": "Grass"
+            "left": "Grass",
+            "probabilty": 4.17
         },
         {
             "3": "images/Tiles/3.jpg",
             "up": "Castle",
             "right": "Road",
             "down": "Road",
-            "left": "Castle"
+            "left": "Castle",
+            "probabilty": 2.78
         },
         {
             "4": "images/Tiles/4.jpg",
             "up": "Castle",
             "right": "Castle",
             "down": "Road",
-            "left": "Castle"
+            "left": "Castle",
+            "probabilty": 1.39
         },
         {
             "5": "images/Tiles/5.jpg",
             "up": "Castle",
             "right": "Castle",
             "down": "Grass",
-            "left": "Castle"
+            "left": "Castle",
+            "probabilty": 1.39
         },
         {
             "6": "images/Tiles/6.jpg",
             "up": "Castle",
             "right": "Road",
             "down": "Road",
-            "left": "Castle"
+            "left": "Castle",
+            "probabilty": 4.17
         },
         {
             "7": "images/Tiles/7.jpg",
             "up": "Castle",
             "right": "Road",
             "down": "Road",
-            "left": "Road"
+            "left": "Road",
+            "probabilty": 4.17
         },
         {
             "8": "images/Tiles/8.jpg",
             "up": "Road",
             "right": "Grass",
             "down": "Road",
-            "left": "Grass"
+            "left": "Grass",
+            "probabilty": 11.11
         },
         {
             "9": "images/Tiles/9.jpg",
             "up": "Grass",
             "right": "Road",
             "down": "Road",
-            "left": "Road"
+            "left": "Road",
+            "probabilty": 5.56
         },
         {
             "10": "images/Tiles/10.jpg",
             "up": "Castle",
             "right": "Grass",
             "down": "Road",
-            "left": "Road"
+            "left": "Road",
+            "probabilty": 4.17
         },
         {
             "11": "images/Tiles/11.jpg",
             "up": "Castle",
             "right": "Road",
             "down": "Grass",
-            "left": "Road"
+            "left": "Road",
+            "probabilty": 5.56
         },
         {
             "12": "images/Tiles/12.jpg",
             "up": "Grass",
             "right": "Castle",
             "down": "Grass",
-            "left": "Castle"
+            "left": "Castle",
+            "probabilty": 2.78
         },
         {
             "13": "images/Tiles/13.jpg",
             "up": "Castle",
             "right": "Grass",
             "down": "Grass",
-            "left": "Castle"
+            "left": "Castle",
+            "probabilty": 4.17
         },
         {
             "14": "images/Tiles/14.jpg",
             "up": "Grass",
             "right": "Grass",
             "down": "Road",
-            "left": "Grass"
+            "left": "Grass",
+            "probabilty": 2.78
         },
         {
             "15": "images/Tiles/15.jpg",
             "up": "Grass",
             "right": "Grass",
             "down": "Grass",
-            "left": "Grass"
+            "left": "Grass",
+            "probabilty": 5.56
         },
         {
             "16": "images/Tiles/16.jpg",
             "up": "Castle",
             "right": "Castle",
             "down": "Grass",
-            "left": "Castle"
+            "left": "Castle",
+            "probabilty": 4.17
         },
         {
             "17": "images/Tiles/17.jpg",
             "up": "Castle",
             "right": "Castle",
             "down": "Grass",
-            "left": "Grass"
+            "left": "Grass",
+            "probabilty": 2.78
         },
         {
             "18": "images/Tiles/18.jpg",
             "up": "Castle",
             "right": "Grass",
             "down": "Grass",
-            "left": "Grass"
+            "left": "Grass",
+            "probabilty": 6.94
         },
         {
             "19": "images/Tiles/19.jpg",
             "up": "Grass",
             "right": "Castle",
             "down": "Grass",
-            "left": "Castle"
+            "left": "Castle",
+            "probabilty": 1.39
         },
         {
             "20": "images/Tiles/20.jpg",
             "up": "Castle",
             "right": "Castle",
             "down": "Road",
-            "left": "Castle"
+            "left": "Castle",
+            "probabilty": 2.78
         },
         {
             "21": "images/Tiles/21.jpg",
             "up": "Castle",
             "right": "Castle",
             "down": "Castle",
-            "left": "Castle"
+            "left": "Castle",
+            "probabilty": 1.39
         },
         {
             "22": "images/Tiles/22.jpg",
             "up": "Castle",
             "right": "Grass",
             "down": "Grass",
-            "left": "Castle"
+            "left": "Castle",
+            "probabilty": 2.78
         },
         {
             "23": "images/Tiles/23.jpg",
             "up": "Grass",
             "right": "Castle",
             "down": "Grass",
-            "left": "Castle"
+            "left": "Castle",
+            "probabilty": 4.17
         },
         {
             "24": "images/Tiles/24.jpg",
             "up": "Road",
             "right": "Road",
             "down": "Road",
-            "left": "Road"
+            "left": "Road",
+            "probabilty": 1.39
         }
     ]
 };
 // Initialisation lorsque le DOM est chargé
 document.addEventListener('DOMContentLoaded', () => {
     // Créer l'ImageManipulator avec une grille 10x10
-    const imageManipulator = new ImageManipulator(10, 10);
+    const imageManipulator = new ImageManipulator(11, 11);
     // Placer la première tuile au milieu par défaut
     imageManipulator.placeTile(new Coordinate(5, 5), 11);
     const parameterManager = new ParameterManager(imageManipulator);

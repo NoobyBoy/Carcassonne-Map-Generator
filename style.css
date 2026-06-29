@@ -288,6 +288,16 @@ body {
     margin-bottom: 3px;
 }
 
+.tile-field-value {
+    width: 100%;
+    padding: 4px;
+    background-color: #555;
+    border-radius: 3px;
+    color: white;
+    font-size: 0.85rem;
+    text-align: center;
+}
+
 .tile-field-input {
     width: 100%;
     padding: 4px;
@@ -398,6 +408,41 @@ body {
 
 .generate-button:hover {
     background-color: #45a049;
+}
+
+.stop-button {
+    padding: 10px 15px;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+}
+
+.stop-button:hover {
+    background-color: #d32f2f;
+}
+
+.stop-button:disabled {
+    background-color: #666;
+    cursor: not-allowed;
+}
+
+.clear-button {
+    padding: 10px 15px;
+    background-color: #FF9800;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.2s;
+}
+
+.clear-button:hover {
+    background-color: #F57C00;
 }
 
 .radio-group {
