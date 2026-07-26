@@ -743,6 +743,15 @@ class ParameterManager {
         return 500;
     }
 
+    // Get whether to use probabilities
+    public getUseProbabilities(): boolean {
+        const useProbabilitiesCheckbox = document.getElementById('use-probabilities') as HTMLInputElement;
+        if (useProbabilitiesCheckbox) {
+            return useProbabilitiesCheckbox.checked;
+        }
+        return true;
+    }
+
 }
 
 
@@ -868,19 +877,27 @@ class Generator {
             }
         });
 
-        // Weighted random selection based on probabilities
-        const totalProbability = possibleTiles.reduce((sum, tile) => sum + tile.probability, 0);
-        let randomValue = Math.random() * totalProbability;
+        const useProbabilities = this.parameters.getUseProbabilities();
 
-        for (const tile of possibleTiles) {
-            randomValue -= tile.probability;
-            if (randomValue <= 0) {
-                return tile;
+        if (useProbabilities) {
+            // Weighted random selection based on probabilities
+            const totalProbability = possibleTiles.reduce((sum, tile) => sum + tile.probability, 0);
+            let randomValue = Math.random() * totalProbability;
+
+            for (const tile of possibleTiles) {
+                randomValue -= tile.probability;
+                if (randomValue <= 0) {
+                    return tile;
+                }
             }
-        }
 
-        // Fallback if no probability match (shouldn't happen with valid data)
-        return possibleTiles[Math.floor(Math.random() * possibleTiles.length)];
+            // Fallback if no probability match (shouldn't happen with valid data)
+            return possibleTiles[Math.floor(Math.random() * possibleTiles.length)];
+        } else {
+            // Uniform random selection
+            const randomIndex = Math.floor(Math.random() * possibleTiles.length);
+            return possibleTiles[randomIndex];
+        }
     }
 
     private GetNextPosition(): Coordinate {

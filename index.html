@@ -36,14 +36,9 @@
                                 <div class="parameter-group">
                                     <label class="parameter-label">Première tuile</label>
                                     <div class="radio-group">
-                                        <label class="radio-label">
-                                            <input type="radio" name="first-tile" value="middle" checked>
-                                            <span>Milieu</span>
-                                        </label>
-                                        <label class="radio-label">
-                                            <input type="radio" name="first-tile" value="top-left">
-                                            <span>Haut gauche</span>
-                                        </label>
+                                        <label class="radio-label"><input type="radio" name="first-tile" value="middle" checked> <span>Milieu</span></label>
+                                        <label class="radio-label"><input type="radio" name="first-tile" value="top-left"> <span>Haut gauche</span></label>
+                                    <!--
                                         <label class="radio-label">
                                             <input type="radio" name="first-tile" value="top-right">
                                             <span>Haut droite</span>
@@ -56,7 +51,15 @@
                                             <input type="radio" name="first-tile" value="bottom-right">
                                             <span>Bas droite</span>
                                         </label>
+                                    -->
                                     </div>
+                                </div>
+                                <div class="parameter-group">
+                                    <label class="parameter-label">Utiliser les probabilités de cartes</label>
+                                    <label class="switch-label">
+                                        <input type="checkbox" id="use-probabilities" checked>
+                                        <span class="switch-slider"></span>
+                                    </label>
                                 </div>
                                 <div class="parameter-group">
                                     <label class="parameter-label">Vitesse de génération (ms): <span id="speed-value">50</span></label>

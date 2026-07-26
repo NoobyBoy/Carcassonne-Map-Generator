@@ -373,6 +373,51 @@ body {
     border-color: #888;
 }
 
+.switch-label {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+}
+
+.switch-label input[type="checkbox"] {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.switch-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #777;
+    transition: 0.4s;
+    border-radius: 26px;
+}
+
+.switch-slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+}
+
+.switch-label input[type="checkbox"]:checked + .switch-slider {
+    background-color: #4CAF50;
+}
+
+.switch-label input[type="checkbox"]:checked + .switch-slider:before {
+    transform: translateX(24px);
+}
+
 .apply-button {
     padding: 10px 15px;
     background-color: #555;
@@ -447,7 +492,7 @@ body {
 
 .radio-group {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     gap: 8px;
 }
 
