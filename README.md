@@ -1,73 +1,50 @@
+<p align="center">
+  <img src="images/title.png" alt="Carcassonne Map Generator" width="600"/>
+</p>
+
 # Carcassonne Map Generator
 
-Site web statique pour la génération de cartes Carcassonne avec manipulation d'images.
+A web-based tool for generating custom Carcassonne game maps. Create beautiful, playable maps by automatically placing tiles that match each other perfectly.
 
-## Structure du projet
+## What is this?
 
-- `index.html` - Page principale avec layout à deux zones
-- `style.css` - Styles CSS pour le layout
-- `script.ts` - Code TypeScript pour la manipulation d'images et paramètres
-- `tsconfig.json` - Configuration TypeScript
-- `package.json` - Dépendances Node.js
-- `images/` - Dossier pour stocker les images
+This project generates random Carcassonne maps using the official game tiles. The smart algorithm ensures that tiles only connect where their edges match - roads connect to roads, cities to cities, and fields to fields. Perfect for creating new scenarios or exploring different map layouts!
 
-## Installation
+## Features
 
-1. Installer les dépendances :
+- **Automatic tile placement** - Watch as the algorithm builds a map tile by tile
+- **Smart matching** - Tiles only connect where their edges are compatible
+- **Customizable grid size** - Create maps from small to large
+- **Interactive controls** - Zoom in/out and pan around your map
+- **Adjustable speed** - Control how fast the generation happens
+- **Multiple starting positions** - Choose where the first tile is placed
+
+## Examples
+
+<p align="center">
+  <img src="images/example1.jpg" alt="Example map 1" width="400"/>
+  <img src="images/example2.jpg" alt="Example map 2" width="400"/>
+</p>
+
+## How to Use
+
+1. **Open the application** - Simply open `index.html` in your web browser
+2. **Set your preferences** - Adjust grid size, starting position, and generation speed
+3. **Click "Generate"** - Watch as your map is built automatically
+4. **Explore** - Use zoom and pan controls to examine your creation
+5. **Clear and retry** - Generate new maps with different settings
+
+## Getting Started
+
+No complex setup required! Just open the HTML file in any modern browser. The application works entirely in your browser with no server needed.
+
+For developers who want to modify the code:
+
 ```bash
 npm install
-```
-
-2. Compiler le TypeScript :
-```bash
 npm run build
 ```
 
-Pour compiler automatiquement lors des modifications :
-```bash
-npm run watch
-```
+## How It Works
 
-## Layout
-
-Le projet contient deux zones principales :
-- **Zone principale** (gauche) : Zone de manipulation d'images avec une grille interactive pour placer des tuiles
-- **Zone de paramètres** (droite) : Zone pour les paramètres (actuellement avec placeholders)
-
-## Système de Grille
-
-La zone principale contient une grille interactive où vous pouvez placer des tuiles Carcassonne.
-
-### Fonctionnalités de l'ImageManipulator
-
-- `createGrid(rows, cols)` - Crée une grille de dimensions spécifiées
-- `placeTile(x, y, tileId)` - Place une tuile à des coordonnées (x, y)
-- `removeTile(x, y)` - Supprime une tuile à des coordonnées spécifiques
-- `clearGrid()` - Efface toute la grille
-- `getGridState()` - Retourne l'état actuel de la grille
-
-### Exemple d'utilisation
-
-```javascript
-const imageManipulator = new ImageManipulator(10, 10);
-
-// Placer des tuiles
-imageManipulator.placeTile(0, 0, 1);  // Place la tuile 1 à (0,0)
-imageManipulator.placeTile(1, 0, 2);  // Place la tuile 2 à (1,0)
-
-// Supprimer une tuile
-imageManipulator.removeTile(0, 0);
-
-// Effacer toute la grille
-imageManipulator.clearGrid();
-```
-
-### Coordonnées
-
-- Origine (0,0) en haut à gauche
-- Les tuiles sont chargées depuis `images/Tiles/{tileId}.jpg`
-- 24 tuiles disponibles (1.jpg à 24.jpg)
-
-## Ouvrir le site
-
-Ouvrez simplement le fichier `index.html` dans votre navigateur.
+The generator uses a spiral algorithm to place tiles one at a time, always checking that the new tile's edges match with already-placed neighbors. Each tile can be rotated to find the best fit, creating realistic and playable maps every time.

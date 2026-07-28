@@ -515,6 +515,19 @@ class ParameterManager {
         const generateButton = document.getElementById('generate-map');
         if (generateButton && this.imageManipulator) {
             generateButton.addEventListener('click', () => {
+                // Recreate grid with current size before generating
+                const gridSizeXInput = document.getElementById('grid-size-x') as HTMLInputElement;
+                const gridSizeYInput = document.getElementById('grid-size-y') as HTMLInputElement;
+
+                if (gridSizeXInput && gridSizeYInput) {
+                    const sizeX = parseInt(gridSizeXInput.value);
+                    const sizeY = parseInt(gridSizeYInput.value);
+
+                    if (!isNaN(sizeX) && !isNaN(sizeY) && sizeX > 0 && sizeY > 0) {
+                        this.imageManipulator!.createGrid(sizeY, sizeX);
+                    }
+                }
+
                 const generator = new Generator(this.imageManipulator!, this);
                 this.currentGenerator = generator;
                 generator.generate();
