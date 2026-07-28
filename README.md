@@ -10,15 +10,6 @@ A web-based tool for generating custom Carcassonne game maps. Create beautiful, 
 
 This project generates random Carcassonne maps using the official game tiles. The smart algorithm ensures that tiles only connect where their edges match - roads connect to roads, cities to cities, and fields to fields. Perfect for creating new scenarios or exploring different map layouts!
 
-## Features
-
-- **Automatic tile placement** - Watch as the algorithm builds a map tile by tile
-- **Smart matching** - Tiles only connect where their edges are compatible
-- **Customizable grid size** - Create maps from small to large
-- **Interactive controls** - Zoom in/out and pan around your map
-- **Adjustable speed** - Control how fast the generation happens
-- **Multiple starting positions** - Choose where the first tile is placed
-
 ## Examples
 
 <p align="center">
@@ -34,16 +25,6 @@ This project generates random Carcassonne maps using the official game tiles. Th
 4. **Explore** - Use zoom and pan controls to examine your creation
 5. **Clear and retry** - Generate new maps with different settings
 
-## Getting Started
-
-No complex setup required! Just open the HTML file in any modern browser. The application works entirely in your browser with no server needed.
-
-For developers who want to modify the code:
-
-```bash
-npm install
-npm run build
-```
 
 ## How It Works
 
