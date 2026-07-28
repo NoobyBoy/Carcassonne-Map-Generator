@@ -14,7 +14,7 @@ A web-based tool for generating custom Carcassonne game maps. Create beautiful, 
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
 ## What is this?
-
+ 
 This project generates random Carcassonne maps using the official game tiles. The smart algorithm ensures that tiles only connect where their edges match - roads connect to roads, cities to cities, and fields to fields. Perfect for creating new scenarios or exploring different map layouts!
 
 ## Examples
