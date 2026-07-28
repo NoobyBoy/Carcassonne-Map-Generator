@@ -6,6 +6,13 @@
 
 A web-based tool for generating custom Carcassonne game maps. Create beautiful, playable maps by automatically placing tiles that match each other perfectly.
 
+**🌐 Try it online:** [https://noobyboy.github.io/Carcassonne-Map-Generator/](https://noobyboy.github.io/Carcassonne-Map-Generator/)
+
+
+[![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white)](https://html5.org/)
+[![CSS3](https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white)](https://www.w3.org/Style/CSS/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+
 ## What is this?
 
 This project generates random Carcassonne maps using the official game tiles. The smart algorithm ensures that tiles only connect where their edges match - roads connect to roads, cities to cities, and fields to fields. Perfect for creating new scenarios or exploring different map layouts!
