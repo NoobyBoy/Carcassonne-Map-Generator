@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,52 +10,58 @@
     <div class="container">
         <div class="title-section">
             <img src="images/title.png" alt="Title" class="title-image" style="width: 25%;">
+            <button class="language-switcher" id="language-switcher">🇫🇷 FR</button>
         </div>
         <div class="content-wrapper">
             <div class="main-zone">
                 <div class="image-area">
                     <div id="tile-grid" class="tile-grid"></div>
-                    <button class="zoom-reset-button" id="zoom-reset">↺ Reset</button>
+                    <button class="zoom-reset-button" id="zoom-reset" data-i18n="reset">↺ Reset</button>
                 </div>
             </div>
             <div class="sidebar-zone">
-                <h2>Paramètres</h2>
+                <h2 data-i18n="settings">Settings</h2>
                 <div class="tabs-container">
                     <div class="tab-buttons">
-                        <button class="tab-button active" data-tab="general">Général</button>
-                        <button class="tab-button" data-tab="tiles">Tuiles</button>
+                        <button class="tab-button active" data-tab="general" data-i18n="general">General</button>
+                        <button class="tab-button" data-tab="tiles" data-i18n="tiles">Tiles</button>
                     </div>
                     <div class="tab-content">
                         <div class="tab-pane active" id="tab-general">
                             <div class="parameters-content">
                                 <div class="parameter-group">
-                                    <label class="parameter-label">Taille de la grille (X)</label>
+                                    <label class="parameter-label" data-i18n="grid-size-x">Grid size (X)</label>
                                     <input type="number" id="grid-size-x" class="parameter-input" value="11" min="1" max="50">
-                                    <label class="parameter-label">Taille de la grille (Y)</label>
+                                    <label class="parameter-label" data-i18n="grid-size-y">Grid size (Y)</label>
                                     <input type="number" id="grid-size-y" class="parameter-input" value="11" min="1" max="50">
                                 </div>
                                 <div class="parameter-group">
-                                    <label class="parameter-label">Première tuile</label>
+                                    <label class="parameter-label" data-i18n="first-tile">First tile</label>
                                     <div class="radio-group">
-                                        <label class="radio-label"><input type="radio" name="first-tile" value="middle" checked> <span>Milieu</span></label>
-                                        <label class="radio-label"><input type="radio" name="first-tile" value="top-left"> <span>Haut gauche</span></label>
+                                        <label class="radio-label"><input type="radio" name="first-tile" value="middle" checked> <span data-i18n="middle">Middle</span></label>
+                                        <label class="radio-label"><input type="radio" name="first-tile" value="top-left"> <span data-i18n="top-left">Top left</span></label>
                                     </div>
                                 </div>
                                 <div class="parameter-group">
-                                    <label class="parameter-label">Utiliser les probabilités de cartes</label>
+                                    <label class="parameter-label" data-i18n="use-probabilities">Use card probabilities</label>
                                     <label class="switch-label">
                                         <input type="checkbox" id="use-probabilities" checked>
                                         <span class="switch-slider"></span>
                                     </label>
                                 </div>
                                 <div class="parameter-group">
-                                    <label class="parameter-label">Vitesse de génération (ms): <span id="speed-value">50</span></label>
-                                    <input type="range" id="generation-speed" class="parameter-slider" min="0" max="500" step="50" value="50">
+                                    <label class="parameter-label" data-i18n="generation-speed">Generation speed:</label>
+                                    <select id="generation-speed" class="parameter-input">
+                                        <option value="0" data-i18n="speed-very-fast">Very fast</option>
+                                        <option value="50" selected data-i18n="speed-fast">Fast</option>
+                                        <option value="150" data-i18n="speed-slow">Slow</option>
+                                        <option value="300" data-i18n="speed-very-slow">Very slow</option>
+                                    </select>
                                 </div>
                                 <div class="button-group">
-                                    <button class="generate-button" id="generate-map">Générer</button>
-                                    <button class="stop-button" id="stop-generation">Arrêter</button>
-                                    <button class="clear-button" id="clear-grid">Effacer</button>
+                                    <button class="generate-button" id="generate-map" data-i18n="generate">Generate</button>
+                                    <button class="stop-button" id="stop-generation" data-i18n="stop">Stop</button>
+                                    <button class="clear-button" id="clear-grid" data-i18n="clear">Clear</button>
                                 </div>
                             </div>
                         </div>

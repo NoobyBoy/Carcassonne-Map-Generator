@@ -1,6 +1,110 @@
 // TypeScript pour la manipulation d'images et des paramètres
 // Système de grille pour placer des tuiles Carcassonne
 
+// Translation system
+type TranslationKey = 'settings' | 'general' | 'tiles' | 'grid-size-x' | 'grid-size-y' | 'first-tile' | 'middle' | 'top-left' | 'use-probabilities' | 'generation-speed' | 'speed-very-fast' | 'speed-fast' | 'speed-slow' | 'speed-very-slow' | 'generate' | 'stop' | 'clear' | 'reset' | 'tile' | 'probability' | 'up' | 'right' | 'down' | 'left';
+
+type Translations = {
+    [lang: string]: {
+        [key in TranslationKey]: string;
+    };
+};
+
+const translations: Translations = {
+    fr: {
+        settings: "Paramètres",
+        general: "Général",
+        tiles: "Tuiles",
+        "grid-size-x": "Taille de la grille (X)",
+        "grid-size-y": "Taille de la grille (Y)",
+        "first-tile": "Première tuile",
+        middle: "Milieu",
+        "top-left": "Haut gauche",
+        "use-probabilities": "Utiliser les probabilités de cartes",
+        "generation-speed": "Vitesse de génération:",
+        "speed-very-fast": "Très rapide",
+        "speed-fast": "Rapide",
+        "speed-slow": "Lent",
+        "speed-very-slow": "Très lent",
+        generate: "Générer",
+        stop: "Arrêter",
+        clear: "Effacer",
+        reset: "↺ Reset",
+        tile: "Tuile",
+        probability: "Probabilité",
+        up: "Haut",
+        right: "Droite",
+        down: "Bas",
+        left: "Gauche"
+    },
+    en: {
+        settings: "Settings",
+        general: "General",
+        tiles: "Tiles",
+        "grid-size-x": "Grid size (X)",
+        "grid-size-y": "Grid size (Y)",
+        "first-tile": "First tile",
+        middle: "Middle",
+        "top-left": "Top left",
+        "use-probabilities": "Use card probabilities",
+        "generation-speed": "Generation speed:",
+        "speed-very-fast": "Very fast",
+        "speed-fast": "Fast",
+        "speed-slow": "Slow",
+        "speed-very-slow": "Very slow",
+        generate: "Generate",
+        stop: "Stop",
+        clear: "Clear",
+        reset: "↺ Reset",
+        tile: "Tile",
+        probability: "Probability",
+        up: "Up",
+        right: "Right",
+        down: "Down",
+        left: "Left"
+    }
+};
+
+let currentLanguage = 'en';
+
+function setLanguage(lang: string): void {
+    currentLanguage = lang;
+    const elements = document.querySelectorAll('[data-i18n]');
+    elements.forEach(element => {
+        const key = element.getAttribute('data-i18n');
+        if (key && translations[lang] && translations[lang][key as TranslationKey]) {
+            // Handle option elements differently (use textContent instead of innerHTML)
+            if (element.tagName === 'OPTION') {
+                element.textContent = translations[lang][key as TranslationKey];
+            } else {
+                element.innerHTML = translations[lang][key as TranslationKey];
+            }
+        }
+    });
+    
+    // Update language switcher button with flag
+    const switcher = document.getElementById('language-switcher');
+    if (switcher) {
+        switcher.textContent = lang === 'fr' ? '🇬🇧 EN' : '🇫🇷 FR';
+    }
+    
+    // Update HTML lang attribute
+    document.documentElement.lang = lang;
+    
+    // Re-render tiles list if it exists
+    const parameterManager = (window as any).parameterManagerInstance;
+    if (parameterManager) {
+        const tilesList = document.getElementById('tiles-list');
+        if (tilesList) {
+            tilesList.innerHTML = '';
+            parameterManager.loadTilesMapping();
+        }
+    }
+}
+
+function getTranslation(key: TranslationKey): string {
+    return translations[currentLanguage]?.[key] || translations['fr']?.[key] || key;
+}
 
 interface GridState {
     [key: string]: { tileId: number, rotation: number, matchString: string }; // key: "x,y", value: tile data
@@ -52,7 +156,7 @@ class ImageManipulator {
     }
 
     private initialize(): void {
-        console.log('Image Manipulator initialized');
+        // console.log('Image Manipulator initialized');
         this.createGrid(this.rows, this.cols);
         this.setupZoomControls();
         this.setupMouseControls();
@@ -102,7 +206,7 @@ class ImageManipulator {
             }
         }
 
-        console.log(`Grid created: ${rows}x${cols}, cell size: ${cellSize}px`);
+        // console.log(`Grid created: ${rows}x${cols}, cell size: ${cellSize}px`);
     }
 
     // Restaurer l'état de la grille après redimensionnement
@@ -286,8 +390,8 @@ class ImageManipulator {
             }
             
             this.gridState[cellKey] = { tileId, rotation, matchString };
-            console.log(`Tile ${tileId} placed at (${coordinate.x}, ${coordinate.y}) with rotation ${rotation}deg and ${matchString}`);
-            console.log(`up: ${matchString.split('-')[0]}, right: ${matchString.split('-')[1]}, down: ${matchString.split('-')[2]}, left: ${matchString.split('-')[3]}`);
+            // console.log(`Tile ${tileId} placed at (${coordinate.x}, ${coordinate.y}) with rotation ${rotation}deg and ${matchString}`);
+            // console.log(`up: ${matchString.split('-')[0]}, right: ${matchString.split('-')[1]}, down: ${matchString.split('-')[2]}, left: ${matchString.split('-')[3]}`);
         } else {
             console.error(`Failed to load tile image: ${tileId}.jpg`);
         }
@@ -322,7 +426,7 @@ class ImageManipulator {
             }
             cell.classList.remove('occupied');
             delete this.gridState[cellKey];
-            console.log(`Tile removed at (${coordinate.x}, ${coordinate.y})`);
+            // console.log(`Tile removed at (${coordinate.x}, ${coordinate.y})`);
         }
     }
 
@@ -337,7 +441,7 @@ class ImageManipulator {
             cell.classList.remove('occupied');
         });
         this.gridState = {};
-        console.log('Grid cleared');
+        // console.log('Grid cleared');
     }
 
     // Obtenir l'état actuel de la grille
@@ -348,7 +452,7 @@ class ImageManipulator {
     // Gérer le clic sur une cellule (placeholder pour interaction future)
     private handleCellClick(x: number, y: number): void {
         const coordinate = new Coordinate(x, y);
-        console.log(`Cell clicked at (${coordinate.x}, ${coordinate.y})`);
+        // console.log(`Cell clicked at (${coordinate.x}, ${coordinate.y})`);
         // Implémentation future pour la sélection/placement interactif
     }
 
@@ -371,22 +475,22 @@ class ImageManipulator {
         }
 
         // Find the tile in tilesData
-        console.log('Fetching tile information at coordinates (x, y)',x , y, ':', tileData);
+        // console.log('Fetching tile information at coordinates (x, y)',x , y, ':', tileData);
         const splitMatch = tileData.matchString.split('-');
         if (direction === "up") {
-            console.log(splitMatch, direction, splitMatch[2]);
+            // console.log(splitMatch, direction, splitMatch[2]);
             return splitMatch[2]; // i get the down position
         }
         else if (direction === "right") {
-            console.log(splitMatch, direction, splitMatch[3]);
+            // console.log(splitMatch, direction, splitMatch[3]);
             return splitMatch[3]; // i get the left position
         }
         else if (direction === "down") {
-            console.log(splitMatch, direction, splitMatch[0]);
+            // console.log(splitMatch, direction, splitMatch[0]);
             return splitMatch[0]; // i get the up position
         }
         else if (direction === "left") {
-            console.log(splitMatch, direction, splitMatch[1]);
+            // console.log(splitMatch, direction, splitMatch[1]);
             return splitMatch[1]; // i get the right position
         }
 
@@ -411,7 +515,7 @@ class ParameterManager {
     }
 
     private initialize(): void {
-        console.log('Parameter Manager initialized');
+        // console.log('Parameter Manager initialized');
         this.setupTabs();
         this.setupGridSizeInputs();
         this.setupGenerateButton();
@@ -475,7 +579,7 @@ class ParameterManager {
                 const randomTile = this.selectRandomTile();
                 this.imageManipulator.placeTile(position, randomTile);
 
-                console.log(`Grid resized to ${sizeY}x${sizeX}, first tile at (${position.x}, ${position.y})`);
+                // console.log(`Grid resized to ${sizeY}x${sizeX}, first tile at (${position.x}, ${position.y})`);
             } else {
                 console.error('Invalid grid size values');
             }
@@ -548,12 +652,11 @@ class ParameterManager {
     }
 
     private setupGenerationSpeedSlider(): void {
-        const speedSlider = document.getElementById('generation-speed') as HTMLInputElement;
-        const speedValue = document.getElementById('speed-value') as HTMLElement;
+        const speedSelect = document.getElementById('generation-speed') as HTMLSelectElement;
         
-        if (speedSlider && speedValue) {
-            speedSlider.addEventListener('input', () => {
-                speedValue.textContent = speedSlider.value;
+        if (speedSelect) {
+            speedSelect.addEventListener('change', () => {
+                // console.log('Generation speed changed to:', speedSelect.value);
             });
         }
     }
@@ -604,14 +707,14 @@ class ParameterManager {
 
             const idLabel = document.createElement('div');
             idLabel.className = 'tile-entry-id';
-            idLabel.textContent = `Tuile ${tileId}`;
+            idLabel.textContent = `${getTranslation('tile')} ${tileId}`;
 
             const probabilityField = document.createElement('div');
             probabilityField.className = 'tile-field';
 
             const probabilityLabel = document.createElement('div');
             probabilityLabel.className = 'tile-field-label';
-            probabilityLabel.textContent = 'Probabilité';
+            probabilityLabel.textContent = getTranslation('probability');
 
             const probabilityValue = document.createElement('div');
             probabilityValue.className = 'tile-field-value';
@@ -628,10 +731,10 @@ class ParameterManager {
             fields.className = 'tile-entry-fields';
 
             const fieldConfigs = [
-                { label: 'Haut', value: up, key: 'up' },
-                { label: 'Droite', value: right, key: 'right' },
-                { label: 'Bas', value: down, key: 'down' },
-                { label: 'Gauche', value: left, key: 'left' }
+                { label: getTranslation('up'), value: up, key: 'up' },
+                { label: getTranslation('right'), value: right, key: 'right' },
+                { label: getTranslation('down'), value: down, key: 'down' },
+                { label: getTranslation('left'), value: left, key: 'left' }
             ];
 
             fieldConfigs.forEach(config => {
@@ -689,12 +792,12 @@ class ParameterManager {
 
     // Get generation speed
     public getGenerationSpeed(): number {
-        const speedSlider = document.getElementById('generation-speed') as HTMLInputElement;
-        if (speedSlider) {
-            const value = parseInt(speedSlider.value);
-            return !isNaN(value) && value >= 0 ? value : 500;
+        const speedSelect = document.getElementById('generation-speed') as HTMLSelectElement;
+        if (speedSelect) {
+            const value = parseInt(speedSelect.value);
+            return !isNaN(value) && value >= 0 ? value : 50;
         }
-        return 500;
+        return 50;
     }
 
     // Get whether to use probabilities
@@ -768,9 +871,9 @@ class Generator {
         this.firstSpiralTile = true;
 
         this.initializeTilesList(tilesData.tiles);    
-        console.log('Tiles list:');
+        // console.log('Tiles list:');
         this.TilesList.forEach(tile => {
-            console.log(`Tile ${tile.id} - Rotation: ${tile.rotation} - Match string: ${tile.matchString}`);
+            // console.log(`Tile ${tile.id} - Rotation: ${tile.rotation} - Match string: ${tile.matchString}`);
         });
     }
 
@@ -824,8 +927,8 @@ class Generator {
         const down = this.imageManipulator.getCellTile(coord.x, coord.y + 1, "down");
         const left = this.imageManipulator.getCellTile(coord.x - 1, coord.y, "left");
 
-        console.log(`${coord.x}, ${coord.y} : up : ${up} | right : ${right} | down : ${down} | left : ${left}`);
-        console.log(`^${up}+-${right}+-${down}+-${left}+$`);
+        // console.log(`${coord.x}, ${coord.y} : up : ${up} | right : ${right} | down : ${down} | left : ${left}`);
+        // console.log(`^${up}+-${right}+-${down}+-${left}+$`);
         return `^${up}+-${right}+-${down}+-${left}+$`;
     }
 
@@ -972,7 +1075,7 @@ class Generator {
                 return nextValidPosition;
             } else {
                 this.generationEnded = true;
-                console.log(`Generation ended : {x: ${nextX}, y: ${nextY}}`);
+                // console.log(`Generation ended : {x: ${nextX}, y: ${nextY}}`);
                 return new Coordinate(-1, -1);
             }
         }
@@ -1008,7 +1111,7 @@ class Generator {
             while (!this.generationEnded && !this.shouldStop) {
                 // Check if current coordinate is valid
                 if (this.currentTileCoordinate.x === -1 || this.currentTileCoordinate.y === -1) {
-                    console.log('Invalid coordinate, stopping generation');
+                    // console.log('Invalid coordinate, stopping generation');
                     break;
                 }
                 const nextTile = this.ChoseNextTile();
@@ -1017,20 +1120,20 @@ class Generator {
                 this.currentTileCoordinate = this.GetNextPosition();
 
                 iteration++;
-                console.log(`Iteration: ${iteration}, Position: (${this.previousTileCoordinate.x}, ${this.previousTileCoordinate.y})`);
+                // console.log(`Iteration: ${iteration}, Position: (${this.previousTileCoordinate.x}, ${this.previousTileCoordinate.y})`);
                 await new Promise(resolve => setTimeout(resolve, generationSpeed));
 
 
             }
 
             this.parameters.setStopButtonEnabled(false);
-            console.log(`Generation ended after ${iteration} iterations`);
+            // console.log(`Generation ended after ${iteration} iterations`);
         }
     }
 
     public stop(): void {
         this.shouldStop = true;
-        console.log('Generation stopped by user');
+        // console.log('Generation stopped by user');
     }
     
 }
@@ -1239,4 +1342,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Placer la première tuile au milieu par défaut
     const parameterManager = new ParameterManager(imageManipulator);
+    
+    // Store parameterManager globally for language switching
+    (window as any).parameterManagerInstance = parameterManager;
+    
+    // Setup language switcher
+    const languageSwitcher = document.getElementById('language-switcher');
+    if (languageSwitcher) {
+        languageSwitcher.addEventListener('click', () => {
+            const newLang = currentLanguage === 'fr' ? 'en' : 'fr';
+            setLanguage(newLang);
+        });
+    }
 });
