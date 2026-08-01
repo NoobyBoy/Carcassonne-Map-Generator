@@ -39,7 +39,6 @@ class ImageManipulator {
         this.gridState = {};
         this.rows = rows;
         this.cols = cols;
-        this.cellSize = 60; // Gardé pour compatibilité mais non utilisé
         this.initialize();
     }
     initialize() {
@@ -114,9 +113,6 @@ class ImageManipulator {
     // Apply zoom level to grid
     applyZoom() {
         const cellSize = this.baseCellSize * this.zoomLevel;
-        // Reduce gap when zooming in (gap = 2px / zoomLevel)
-        const gap = Math.max(1, 2 / this.zoomLevel);
-        // console.log('ApplyZoom - zoomLevel:', this.zoomLevel, 'baseCellSize:', this.baseCellSize, 'newCellSize:', cellSize, 'gap:', gap);
         this.tileGrid.style.gridTemplateColumns = `repeat(${this.cols}, ${cellSize}px)`;
         this.tileGrid.style.gridTemplateRows = `repeat(${this.rows}, ${cellSize}px)`;
         this.tileGrid.style.gap = `1px`;
@@ -340,25 +336,9 @@ class ImageManipulator {
         }
         return "[^-]";
     }
-    // Placeholder pour charger une image (méthode conservée pour compatibilité)
-    loadImage(imagePath) {
-        console.log(`Loading image: ${imagePath}`);
-        // Implémentation future
-    }
-    // Placeholder pour appliquer des filtres (méthode conservée pour compatibilité)
-    applyFilter(filterType) {
-        console.log(`Applying filter: ${filterType}`);
-        // Implémentation future
-    }
-    // Placeholder pour redimensionner l'image (méthode conservée pour compatibilité)
-    resizeImage(width, height) {
-        console.log(`Resizing image to: ${width}x${height}`);
-        // Implémentation future
-    }
 }
 class ParameterManager {
     constructor(imageManipulator = null) {
-        this.tileInputs = new Map();
         this.imageManipulator = null;
         this.currentGenerator = null;
         this.parametersContent = document.querySelector('.parameters-content');
@@ -369,7 +349,6 @@ class ParameterManager {
     initialize() {
         console.log('Parameter Manager initialized');
         this.setupTabs();
-        this.setupExportButton();
         this.setupGridSizeInputs();
         this.setupGenerateButton();
         this.setupStopButton();
@@ -409,14 +388,6 @@ class ParameterManager {
     loadTilesMapping() {
         this.displayTiles(tilesData.tiles);
     }
-    setupExportButton() {
-        const exportButton = document.getElementById('export-tiles');
-        if (exportButton) {
-            exportButton.addEventListener('click', () => {
-                this.exportTilesData();
-            });
-        }
-    }
     setupGridSizeInputs() {
         const gridSizeXInput = document.getElementById('grid-size-x');
         const gridSizeYInput = document.getElementById('grid-size-y');
@@ -441,6 +412,7 @@ class ParameterManager {
         const generateButton = document.getElementById('generate-map');
         if (generateButton && this.imageManipulator) {
             generateButton.addEventListener('click', () => {
+                this.imageManipulator.clearGrid();
                 // Recreate grid with current size before generating
                 const gridSizeXInput = document.getElementById('grid-size-x');
                 const gridSizeYInput = document.getElementById('grid-size-y');
@@ -518,46 +490,9 @@ class ParameterManager {
                 return new Coordinate(Math.floor(sizeX / 2), Math.floor(sizeY / 2));
         }
     }
-    exportTilesData() {
-        // Create a copy of tilesData with updated values from inputs
-        const exportedData = {
-            tiles: tilesData.tiles.map(tile => {
-                const tileId = Object.keys(tile).find(key => ['up', 'right', 'down', 'left'].indexOf(key) === -1);
-                if (!tileId)
-                    return tile;
-                const updatedTile = Object.assign({}, tile);
-                // Update values from input fields
-                const upInput = this.tileInputs.get(`${tileId}_up`);
-                const rightInput = this.tileInputs.get(`${tileId}_right`);
-                const downInput = this.tileInputs.get(`${tileId}_down`);
-                const leftInput = this.tileInputs.get(`${tileId}_left`);
-                if (upInput)
-                    updatedTile.up = upInput.value;
-                if (rightInput)
-                    updatedTile.right = rightInput.value;
-                if (downInput)
-                    updatedTile.down = downInput.value;
-                if (leftInput)
-                    updatedTile.left = leftInput.value;
-                return updatedTile;
-            })
-        };
-        const dataStr = JSON.stringify(exportedData, null, 2);
-        const dataBlob = new Blob([dataStr], { type: 'application/json' });
-        const url = URL.createObjectURL(dataBlob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'tiles-mapping.json';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-        console.log('Tiles data exported');
-    }
     displayTiles(tiles) {
         if (!this.tilesList)
             return;
-        this.tileInputs.clear();
         tiles.forEach(tile => {
             const tileId = Object.keys(tile).find(key => ['up', 'right', 'down', 'left'].indexOf(key) === -1);
             if (!tileId)
