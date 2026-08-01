@@ -30,10 +30,10 @@ class ImageManipulator {
         this.zoomLevel = 1;
         this.baseCellSize = 0;
         this.isDragging = false;
-        this.startX = 0;
-        this.startY = 0;
         this.translateX = 0;
         this.translateY = 0;
+        this.lastX = 0;
+        this.lastY = 0;
         this.imageArea = document.querySelector('.image-area');
         this.tileGrid = document.getElementById('tile-grid');
         this.gridState = {};
@@ -114,10 +114,13 @@ class ImageManipulator {
     // Apply zoom level to grid
     applyZoom() {
         const cellSize = this.baseCellSize * this.zoomLevel;
-        // console.log('ApplyZoom - zoomLevel:', this.zoomLevel, 'baseCellSize:', this.baseCellSize, 'newCellSize:', cellSize);
+        // Reduce gap when zooming in (gap = 2px / zoomLevel)
+        const gap = Math.max(1, 2 / this.zoomLevel);
+        // console.log('ApplyZoom - zoomLevel:', this.zoomLevel, 'baseCellSize:', this.baseCellSize, 'newCellSize:', cellSize, 'gap:', gap);
         this.tileGrid.style.gridTemplateColumns = `repeat(${this.cols}, ${cellSize}px)`;
         this.tileGrid.style.gridTemplateRows = `repeat(${this.rows}, ${cellSize}px)`;
-        this.tileGrid.style.transform = `translate(${this.translateX}px, ${this.translateY}px) scale(${this.zoomLevel})`;
+        this.tileGrid.style.gap = `1px`;
+        this.tileGrid.style.transform = `translate(${this.translateX}px, ${this.translateY}px)`;
         this.tileGrid.style.transformOrigin = 'center center';
     }
     // Zoom in
@@ -159,12 +162,10 @@ class ImageManipulator {
             if (e.button === 2) { // Right mouse button
                 e.preventDefault();
                 this.isDragging = true;
-                this.startX = e.pageX;
-                this.startY = e.pageY;
-                this.translateX = 0;
-                this.translateY = 0;
+                this.lastX = e.pageX;
+                this.lastY = e.pageY;
                 this.imageArea.style.cursor = 'grabbing';
-                // console.log('Drag started - startX:', this.startX, 'startY:', this.startY, 'translateX:', this.translateX, 'translateY:', this.translateY);
+                // console.log('Drag started - lastX:', this.lastX, 'lastY:', this.lastY, 'translateX:', this.translateX, 'translateY:', this.translateY);
             }
         });
         this.imageArea.addEventListener('mouseleave', () => {
@@ -182,10 +183,13 @@ class ImageManipulator {
             if (!this.isDragging)
                 return;
             e.preventDefault();
-            const deltaX = e.pageX - this.startX;
-            const deltaY = e.pageY - this.startY;
-            this.translateX = deltaX;
-            this.translateY = deltaY;
+            const deltaX = e.pageX - this.lastX;
+            const deltaY = e.pageY - this.lastY;
+            // Divide by zoom level to compensate for scale transform
+            this.translateX += deltaX;
+            this.translateY += deltaY;
+            this.lastX = e.pageX;
+            this.lastY = e.pageY;
             // console.log('Dragging - currentX:', e.pageX, 'currentY:', e.pageY, 'deltaX:', deltaX, 'deltaY:', deltaY, 'translateX:', this.translateX, 'translateY:', this.translateY);
             this.applyZoom();
         });
@@ -423,7 +427,8 @@ class ParameterManager {
                 this.imageManipulator.createGrid(sizeY, sizeX);
                 // Place first tile based on selected position
                 const position = this.calculateFirstTileCoordinates();
-                this.imageManipulator.placeTile(position, 11);
+                const randomTile = this.selectRandomTile();
+                this.imageManipulator.placeTile(position, randomTile);
                 console.log(`Grid resized to ${sizeY}x${sizeX}, first tile at (${position.x}, ${position.y})`);
             }
             else {
@@ -446,6 +451,10 @@ class ParameterManager {
                         this.imageManipulator.createGrid(sizeY, sizeX);
                     }
                 }
+                // Place first tile based on selected position
+                const position = this.calculateFirstTileCoordinates();
+                const randomTile = this.selectRandomTile();
+                this.imageManipulator.placeTile(position, randomTile);
                 const generator = new Generator(this.imageManipulator, this);
                 this.currentGenerator = generator;
                 generator.generate();
@@ -471,7 +480,8 @@ class ParameterManager {
                 this.imageManipulator.clearGrid();
                 // Reset first tile position
                 const position = this.calculateFirstTileCoordinates();
-                this.imageManipulator.placeTile(position, 11);
+                const randomTile = this.selectRandomTile();
+                this.imageManipulator.placeTile(position, randomTile);
             });
         }
     }
@@ -650,6 +660,15 @@ class ParameterManager {
         }
         return true;
     }
+    // Select a random tile from the available tiles
+    selectRandomTile() {
+        const tileIds = tilesData.tiles.map(tile => {
+            const tileId = Object.keys(tile).find(key => ['up', 'right', 'down', 'left'].indexOf(key) === -1);
+            return tileId ? parseInt(tileId) : 0;
+        }).filter(id => id > 0);
+        const randomIndex = Math.floor(Math.random() * tileIds.length);
+        return tileIds[randomIndex];
+    }
 }
 class OrientedTile {
     constructor(config) {
@@ -825,6 +844,19 @@ class Generator {
                 return this.GetNextPositionSpiral();
         }
     }
+    findNextEmptyPosition() {
+        const gridState = this.imageManipulator.getGridState();
+        // Search for empty positions starting from the previous position
+        for (let y = 0; y < this.gridSize.y; y++) {
+            for (let x = 0; x < this.gridSize.x; x++) {
+                const key = `${x},${y}`;
+                if (!gridState[key]) {
+                    return new Coordinate(x, y);
+                }
+            }
+        }
+        return null; // No empty positions found
+    }
     GetNextPositionSpiral() {
         let nextX = this.previousTileCoordinate.x;
         let nextY = this.previousTileCoordinate.y;
@@ -849,9 +881,21 @@ class Generator {
         }
         // Check if next position is within bounds
         if (nextX < 0 || nextX >= this.gridSize.x || nextY < 0 || nextY >= this.gridSize.y) {
-            this.generationEnded = true;
-            console.log(`Generation ended : {x: ${nextX}, y: ${nextY}}`);
-            return new Coordinate(-1, -1);
+            // When hitting a border, find the next valid empty position
+            const nextValidPosition = this.findNextEmptyPosition();
+            if (nextValidPosition) {
+                // Reset spiral state to continue from new position
+                this.spiralStep = 1;
+                this.spiralDirection = 0;
+                this.spiralStepsInDirection = 0;
+                this.spiralDirectionChanges = 0;
+                return nextValidPosition;
+            }
+            else {
+                this.generationEnded = true;
+                console.log(`Generation ended : {x: ${nextX}, y: ${nextY}}`);
+                return new Coordinate(-1, -1);
+            }
         }
         // Update spiral state
         this.spiralStepsInDirection++;
@@ -1101,7 +1145,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Créer l'ImageManipulator avec une grille 10x10
     const imageManipulator = new ImageManipulator(11, 11);
     // Placer la première tuile au milieu par défaut
-    imageManipulator.placeTile(new Coordinate(5, 5), 11);
     const parameterManager = new ParameterManager(imageManipulator);
 });
 //# sourceMappingURL=script.js.map
